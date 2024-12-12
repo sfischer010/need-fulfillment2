@@ -8,6 +8,10 @@ Ensure you have the following installed on your machine:
 2. **PostgreSQL**: Download and install PostgreSQL from https://www.postgresql.org/download/  Make sure to set up a new database and note down the connection details.
 3. **Mapbox Access Token**: Sign up at https://www.mapbox.com/) and get your access token.
 
+Run the following commands to set up your PostgreSQL database:
+   ```bash
+   psql -U your_username -d your_database -f schema.sql
+
 # Welcome to Need Fulfillment
 Connecting those in need with those who can help
 At Needs Fulfillment, we believe in the power of community and support. Our platform connects individuals and organizations with the resources they need to overcome challenges and improve their lives. Whether you’re seeking assistance or looking to lend a helping hand, we’re here to make those connections meaningful and impactful.
