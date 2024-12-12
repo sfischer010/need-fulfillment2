@@ -11,6 +11,7 @@ Ensure you have the following installed on your machine:
 Run the following commands to set up your PostgreSQL database:
    ```bash
    psql -U your_username -d your_database -f schema.sql
+```
 
 # Welcome to Need Fulfillment
 Connecting those in need with those who can help
