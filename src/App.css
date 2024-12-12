@@ -1,0 +1,221 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400&display=swap');
+
+body{
+  margin: 0;
+  padding: 0;
+}
+
+.app-body{
+  padding: 10px;
+}
+
+.mapboxgl-popup-content{
+  padding: inherit;
+}
+
+a{
+  text-decoration:underline;
+}
+
+nav {
+  background-color: #1a73e8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100px;
+}
+
+nav img {
+  height: 118px;
+  margin: 0;
+  padding: 0;
+}
+
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  flex-grow: 1;
+  justify-content: flex-start;
+}
+
+nav ul li {
+  background-color: #1f9ce9;
+  color: #fff;
+  padding: 10px 15px;
+  margin: 0 8px;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  display: inline-block;
+}
+
+nav ul li:hover {
+  background-color: #19528a;
+  cursor: pointer;
+}
+
+.text {
+  font-family: 'Comfortaa', 'Pacifico', sans-serif;
+  text-anchor: middle;
+  fill: #fff;
+  font-size: 6rem;
+  line-height: 1em;
+}
+.text-top {
+  font-size: 24px;
+}
+.text-bottom {
+  font-size: 22px;
+}
+
+.hidden{
+  display: none;
+}
+
+input[type="text"],
+input[type="checkbox"],
+button {
+  @apply border border-gray-300 p-2 rounded shadow-sm;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+}
+
+.form-group {
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  align-items: center;
+  padding-left: 12px;
+}
+
+.form-submit {
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  align-items: center;
+}
+
+.form-group label {
+  flex-basis: 30%;
+  text-align: right;
+}
+
+.form-group input:not([type="checkbox"]) {
+  flex-basis: 65%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.form-group button {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.form-group input[type="checkbox"] {
+  width: auto;
+}
+
+button[type="submit"] {
+  background-color: #1f9ce9;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #19528a;
+}
+
+#status {
+  margin-top: 1rem;
+}
+
+.popup-name {
+  background-color: #1f9ce9;
+  color: white;
+  text-align: center;
+  margin: 0;
+  width: 100%;
+  padding: 10px;
+  display: block;
+  box-sizing: border-box;
+}
+
+.popup-text{
+  padding: 8px;
+  word-break: break-word; 
+  overflow-wrap: break-word; 
+  display: block;
+  width: 120px;
+}
+
+.mapboxgl-popup-close-button {
+  @apply bg-gray-800 text-white p-1 rounded-full;
+}
+
+.mapboxgl-popup-close-button:hover {
+  @apply bg-white text-gray-800;
+}
+
+.mapboxgl-popup-content {
+  @apply p-4 bg-white border border-gray-300 rounded-lg shadow-lg;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  width: 150px;
+}
+
+.popup-link {
+  background-color: #19528a;
+  color: #fff;
+  text-align: center;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  display: inline-block;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s, background-color 0.2s;
+  text-decoration: none;
+}
+
+.popup-link:hover {
+  box-shadow: 0 8px 10px rgba(0, 0, 0, 0.15);
+  background-color: #1f9ce9;
+}
+
+.mapboxgl-popup-content{
+  padding-right:5px;
+  word-break: break-word;
+}
+
+.mapboxgl-popup-text{
+  word-wrap: break-word; /* Allows long words to be broken and wrap to the next line */
+  word-break: break-word; /* Ensures the word breaks to prevent overflow */
+  overflow-wrap: break-word;
+}
+
+.mapboxgl-popup-close-button {
+  color: #fff;
+  background-color: #000;
+  border-radius: 5px;
+  padding:2px;
+}
+
+.mapboxgl-popup-close-button:hover {
+  color: #000;
+  background-color: #fff;
+}
