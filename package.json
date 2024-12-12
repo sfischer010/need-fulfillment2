@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/mapbox-gl": "^3.4.1",
     "cra-template": "1.2.0",
+    "mapbox-gl": "^2.8.0",
     "pg": "^8.13.1",
     "pg-connection-string": "^2.7.0",
     "react": "^19.0.0",
