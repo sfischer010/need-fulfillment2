@@ -14,7 +14,31 @@ body{
 }
 
 a{
-  text-decoration:underline;
+  text-decoration: underline;
+}
+
+.form-group-button {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 1rem;
+}
+
+.form-group-button button {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.form-group-button button:hover {
+  background-color: #0056b3;
+}
+
+.nospace {
+  margin: 0 !important;
 }
 
 nav {
@@ -52,9 +76,27 @@ nav ul li {
   display: inline-block;
 }
 
+nav ul li a {
+  text-decoration: none;
+}
+
 nav ul li:hover {
   background-color: #19528a;
   cursor: pointer;
+}
+
+.clickable-li {
+  display: block;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.clickable-li a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
 }
 
 .text {
@@ -73,6 +115,14 @@ nav ul li:hover {
 
 .hidden{
   display: none;
+}
+
+.nogap{
+  gap: inherit !important;
+}
+
+.nomargin{
+  margin: 0 !important;
 }
 
 input[type="text"],
@@ -123,6 +173,25 @@ button {
 
 .form-group input[type="checkbox"] {
   width: auto;
+}
+
+.form-group select, .form-group textarea {
+  width: 50%;
+  padding: 0.5rem 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-group select:focus, .form-group textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.sendmessage-textarea{
+  width: 80% !important;
+  height: 200px;
 }
 
 button[type="submit"] {

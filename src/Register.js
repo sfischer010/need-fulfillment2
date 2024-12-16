@@ -1,108 +1,8 @@
 import React, { useState } from 'react';
-/*
-function Register() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [zip, setZip] = useState('');
-  const [needsNow, setNeedsNow] = useState(false);
-  const [geoLocation, setGeoLocation] = useState('');
-
-  const handleGeolocate = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setGeoLocation(`${latitude},${longitude}`);
-          alert(`Geolocation successful: ${latitude}, ${longitude}`);
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-          alert('Failed to retrieve geolocation.');
-        }
-      );
-    } else {
-      alert('Geolocation is not supported by this browser.');
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const userData = {
-      U_FirstName: firstName,
-      U_LastName: lastName,
-      U_City: city,
-      U_State: state,
-      U_Zip: zip,
-      U_HasNeedsNow: needsNow,
-      U_RegistrationDate: new Date(),
-      U_Active: true,
-      U_GeoLocation: geoLocation,
-    };
-
-    try {
-      const response = await fetch('http://localhost:5000/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (response.ok) {
-        alert('User registered successfully!');
-      } else {
-        alert('Failed to register user.');
-      }
-    } catch (error) {
-      console.error('Error registering user:', error);
-      alert('Error registering user.');
-    }
-  };
-
-  return (
-    <div class="app-body">
-      <h2>Registration</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>First Name:</label>
-          <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
-        </div>
-        <div>
-          <label>Last Name:</label>
-          <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
-        </div>
-        <div>
-          <label>City:</label>
-          <input type="text" value={city} onChange={(e) => setCity(e.target.value)} required />
-        </div>
-        <div>
-          <label>State:</label>
-          <input type="text" value={state} onChange={(e) => setState(e.target.value)} required />
-        </div>
-        <div>
-          <label>Zip:</label>
-          <input type="text" value={zip} onChange={(e) => setZip(e.target.value)} required />
-        </div>
-        <div>
-          <label>Needs Now:</label>
-          <input type="checkbox" checked={needsNow} onChange={(e) => setNeedsNow(e.target.checked)} />
-        </div>
-        <div>
-          <button type="button" onClick={handleGeolocate}>Geolocate Me</button>
-        </div>
-        <button type="submit">Register</button>
-      </form>
-    </div>
-  );
-}
-
-export default Register;
-*/
 
 function Register() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [city, setCity] = useState('');
@@ -112,36 +12,121 @@ function Register() {
   const [geoLocation, setGeoLocation] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [statusType, setStatusType] = useState(''); // 'success' or 'failure'
-  const [isStatusVisible, setIsStatusVisible] = useState(false); // State to control visibility
+  const [isStatusVisible, setIsStatusVisible] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [isGeolocateClicked, setIsGeolocateClicked] = useState(false); // Track if geolocate is clicked
+
+  const stateAbbreviationMapping = {
+    "Alabama": "AL",
+    "Alaska": "AK",
+    "Arizona": "AZ",
+    "Arkansas": "AR",
+    "California": "CA",
+    "Colorado": "CO",
+    "Connecticut": "CT",
+    "Delaware": "DE",
+    "Florida": "FL",
+    "Georgia": "GA",
+    "Hawaii": "HI",
+    "Idaho": "ID",
+    "Illinois": "IL",
+    "Indiana": "IN",
+    "Iowa": "IA",
+    "Kansas": "KS",
+    "Kentucky": "KY",
+    "Louisiana": "LA",
+    "Maine": "ME",
+    "Maryland": "MD",
+    "Massachusetts": "MA",
+    "Michigan": "MI",
+    "Minnesota": "MN",
+    "Mississippi": "MS",
+    "Missouri": "MO",
+    "Montana": "MT",
+    "Nebraska": "NE",
+    "Nevada": "NV",
+    "New Hampshire": "NH",
+    "New Jersey": "NJ",
+    "New Mexico": "NM",
+    "New York": "NY",
+    "North Carolina": "NC",
+    "North Dakota": "ND",
+    "Ohio": "OH",
+    "Oklahoma": "OK",
+    "Oregon": "OR",
+    "Pennsylvania": "PA",
+    "Rhode Island": "RI",
+    "South Carolina": "SC",
+    "South Dakota": "SD",
+    "Tennessee": "TN",
+    "Texas": "TX",
+    "Utah": "UT",
+    "Vermont": "VT",
+    "Virginia": "VA",
+    "Washington": "WA",
+    "West Virginia": "WV",
+    "Wisconsin": "WI",
+    "Wyoming": "WY"
+  };
 
   const handleGeolocate = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
           setGeoLocation(`${latitude},${longitude}`);
           setStatusMessage(`Geolocation successful: ${latitude}, ${longitude}`);
           setStatusType('success');
-          setIsStatusVisible(true); // Show status
+          setIsStatusVisible(true);
+  
+          try {
+            const response = await fetch(`http://localhost:5000/api/geocode?latitude=${latitude}&longitude=${longitude}`);
+            if (!response.ok) {
+              throw new Error('Failed to fetch address details');
+            }
+            const data = await response.json();
+            setCity(data.city || '');
+            setState(stateAbbreviationMapping[data.state] || '');  // Map state name to its abbreviation
+            setZip(data.zip || '');
+          } catch (error) {
+            console.error('Error fetching address details:', error);
+          }
         },
         (error) => {
           console.error('Geolocation error:', error);
           setStatusMessage('Failed to retrieve geolocation.');
           setStatusType('failure');
-          setIsStatusVisible(true); // Show status
+          setIsStatusVisible(true);
         }
       );
     } else {
       setStatusMessage('Geolocation is not supported by this browser.');
       setStatusType('failure');
-      setIsStatusVisible(true); // Show status
+      setIsStatusVisible(true);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!geoLocation) {
+      setStatusMessage('Please click "Geolocate Me" to provide your location.');
+      setStatusType('failure');
+      setIsStatusVisible(true);
+      return;
+    }
+
+    const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passwordPattern.test(password)) {
+      setPasswordError('Password must contain at least one letter, one number, and one special character.');
+      return;
+    } else {
+      setPasswordError('');
+    }
 
     const userData = {
+      U_Email: email,
+      U_Password: password,
       U_FirstName: firstName,
       U_LastName: lastName,
       U_City: city,
@@ -169,17 +154,17 @@ function Register() {
         setStatusMessage('Failed to register user.');
         setStatusType('failure');
       }
-      setIsStatusVisible(true); // Show status
+      setIsStatusVisible(true);
     } catch (error) {
       console.error('Error registering user:', error);
       setStatusMessage('Error registering user.');
       setStatusType('failure');
-      setIsStatusVisible(true); // Show status
+      setIsStatusVisible(true);
     }
   };
 
   return (
-    <div className="form-container p-6 space-y-6 text-cyan-950">
+    <div className="form-container w-full p-6 space-y-6 text-cyan-950">
       <h2 className="text-2xl font-bold">Registration</h2>
       <div
         id="status"
@@ -187,7 +172,20 @@ function Register() {
       >
         {statusMessage}
       </div>
+      <strong>Important: Geolocate Yourself!</strong>
+<p className="nospace">Before proceeding, please click the <strong>"Geolocate Me"</strong> button. This is necessary for the Needs Map to center on your general location, ensuring that you can find nearby needs and resources effectively.</p>
       <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label>E-mail (this will be your username):</label>
+          <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </div>
+        <div className="form-group">
+          <label className="w-1/3">Password:</label>
+          <div className="w-2/3 flex flex-col">
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            {passwordError && <p className="text-red-500 mt-1">{passwordError}</p>}
+          </div>
+        </div>
         <div className="form-group">
           <label>First Name:</label>
           <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
@@ -264,11 +262,11 @@ function Register() {
           <label></label>       
           <input type="checkbox" checked={needsNow} onChange={(e) => setNeedsNow(e.target.checked)} />I have needs now
         </div>
-        <div className="form-group flex justify-start ml-4 mt-4">
+        <div className="form-group flex justify-start mt-4">
           <label></label>    
           <button type="button" onClick={handleGeolocate}>Geolocate Me</button>
         </div>
-        <div className="form-group flex justify-start ml-4 mt-4">
+        <div className="form-group flex justify-start mt-4">
           <label></label>    
           <button type="submit">Register</button>
         </div>
