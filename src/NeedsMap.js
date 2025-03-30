@@ -11,7 +11,7 @@ function NeedsMap() {
   useEffect(() => {
     const fetchNeedsData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/get-need-data');
+        const response = await fetch('http://localhost:5002/api/get-need-data');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -24,7 +24,7 @@ function NeedsMap() {
 
     const fetchUserLocation = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/get-user-location');
+        const response = await fetch('http://localhost:5002/api/get-user-location');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -217,7 +217,7 @@ function NeedsMap({ setCurrentPage }) {
   useEffect(() => {
     const fetchNeedsData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/get-need-data');
+        const response = await fetch('http://localhost:5002/api/get-need-data');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -230,7 +230,7 @@ function NeedsMap({ setCurrentPage }) {
 
     const fetchUserLocation = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/get-user-location');
+        const response = await fetch('http://localhost:5002/api/get-user-location');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -443,7 +443,7 @@ function NeedsMap({ setCurrentPage }) {
   useEffect(() => {
     const fetchNeedsData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/get-need-data');
+        const response = await fetch('http://localhost:5002/api/get-need-data');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -457,7 +457,7 @@ function NeedsMap({ setCurrentPage }) {
 
     const fetchUserLocation = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/get-user-location');
+        const response = await fetch('http://localhost:5002/api/get-user-location');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -670,7 +670,7 @@ function NeedsMap() {
   useEffect(() => {
     const fetchNeedsData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/get-need-data');
+        const response = await fetch('http://localhost:5002/api/get-need-data');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -683,7 +683,7 @@ function NeedsMap() {
 
     const fetchUserLocation = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/get-user-location');
+        const response = await fetch('http://localhost:5002/api/get-user-location');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

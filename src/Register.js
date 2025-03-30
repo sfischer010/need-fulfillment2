@@ -80,7 +80,7 @@ function Register() {
           setIsStatusVisible(true);
   
           try {
-            const response = await fetch(`http://localhost:5000/api/geocode?latitude=${latitude}&longitude=${longitude}`);
+            const response = await fetch(`http://localhost:5002/api/geocode?latitude=${latitude}&longitude=${longitude}`);
             if (!response.ok) {
               throw new Error('Failed to fetch address details');
             }
@@ -139,7 +139,7 @@ function Register() {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/register', {
+      const response = await fetch('http://localhost:5002/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

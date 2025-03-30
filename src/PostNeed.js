@@ -11,7 +11,7 @@ function PostNeed() {
     // Fetch active needs from the backend
     const fetchNeeds = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/active-needs');
+        const response = await fetch('http://localhost:5002/api/active-needs');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -34,7 +34,7 @@ function PostNeed() {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/post-need', {
+      const response = await fetch('http://localhost:5002/api/post-need', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ function PostNeed() {
     // Fetch active needs from the backend
     const fetchNeeds = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/active-needs');
+        const response = await fetch('http://localhost:5002/api/active-needs');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -150,7 +150,7 @@ function PostNeed() {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/post-need', {
+      const response = await fetch('http://localhost:5002/api/post-need', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

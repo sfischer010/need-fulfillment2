@@ -15,7 +15,7 @@ function SendMessage() {
   
       const fetchRecipientInfo = async () => {
         try {
-          const response = await fetch(`http://localhost:5000/api/user/${recipientId}`);
+          const response = await fetch(`http://localhost:5002/api/user/${recipientId}`);
           if (!response.ok) {
             throw new Error('Failed to fetch recipient information');
           }
@@ -37,7 +37,7 @@ function SendMessage() {
   
     const handleSendMessage = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/send-message', {
+        const response = await fetch('http://localhost:5002/api/send-message', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

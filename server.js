@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt');
 const pgSession = require('connect-pg-simple')(session);
 const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
 require('dotenv').config();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5002;
 
 const app = express();
 
@@ -18,7 +18,8 @@ const secretKey = crypto.randomBytes(64).toString('hex');
 const geocodingClient = mbxGeocoding({ accessToken: 'pk.eyJ1IjoidGVsZXNjb3BlMDEiLCJhIjoiY200N3MyZ3lzMDUyNDJrcHcybnBvcnp0ZSJ9.M2Kzxx3IpkukrYWDbuvygw' });
 
 const pool = new Pool({
-  user: 'stephanief0101',
+  //user: 'stephanief0101',
+  user: 'steph',
   host: 'localhost',
   database: 'NeedFulfillment',
   password: 'Telescope0202',
@@ -162,6 +163,47 @@ app.get('/api/geocode', async (req, res) => {
   } catch (error) {
     console.error('Geocoding error:', error);
     return res.status(500).json({ error: 'Error retrieving geolocation data' });
+  }
+});
+
+// ProPublica Nonprofit API endpoint
+app.get('/api/nonprofits', async (req, res) => {
+  const { state, city, name } = req.query;
+  try {
+    const encodedState = encodeURIComponent(`state[id]`);
+    const response = await fetch(`https://projects.propublica.org/nonprofits/api/v2/search.json?name=${name}&${encodedState}=${state}`);
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching nonprofits:', error);
+    res.status(500).json({ error: 'Failed to fetch nonprofit data' });
+  }
+});
+
+// Endpoint to register non-profit with geolocation
+app.post('/api/register-nonprofit', async (req, res) => {
+  const { orgName, address, address2, city, state, zip } = req.body;
+
+  try {
+    // Geocode the address using MapBox
+    const response = await geocodingClient.forwardGeocode({
+      query: `${address}, ${city}, ${state} ${zip}`,
+      limit: 1
+    }).send();
+
+    const coordinates = response.body.features[0].geometry.coordinates;
+    const geoLocation = `${coordinates[1]},${coordinates[0]}`; // latitude,longitude
+
+    // Insert non-profit data into UN_Nonprofits table
+    await pool.query(
+      'INSERT INTO UN_Nonprofits (UN_OrgName, UN_Address, UN_Address2, UN_City, UN_State, UN_Zip, UN_Geocoordinates) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [orgName, address, address2, city, state, zip, geoLocation]
+    );
+
+    res.status(201).send('Non-profit registered successfully');
+  } catch (error) {
+    console.error('Error registering non-profit:', error);
+    res.status(500).send('Internal server error');
   }
 });
 

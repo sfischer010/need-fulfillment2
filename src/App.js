@@ -18,7 +18,7 @@ function App() {
     // Check if the user is logged in
     const checkLoginStatus = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/check-login');
+        const response = await fetch('http://localhost:5002/api/check-login');
         if (!response.ok) {
           throw new Error('Failed to check login status');
         }
@@ -34,7 +34,7 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:5000/logout');
+      const response = await fetch('http://localhost:5002/logout');
       if (!response.ok) {
         throw new Error('Failed to logout');
       }
@@ -115,7 +115,7 @@ function App() {
     // Check if the user is logged in
     const checkLoginStatus = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/check-login');
+        const response = await fetch('http://localhost:5002/api/check-login');
         if (!response.ok) {
           throw new Error('Failed to check login status');
         }
@@ -131,7 +131,7 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:5000/logout');
+      const response = await fetch('http://localhost:5002/logout');
       if (!response.ok) {
         throw new Error('Failed to logout');
       }
@@ -157,9 +157,6 @@ function App() {
             <li className="clickable-li">
               <Link to="/needs-map">Needs Map</Link>
             </li>
-            <li className="clickable-li">
-              <Link to="/register">Register</Link>
-            </li>
             {isLoggedIn ? (
               <li className="clickable-li" onClick={handleLogout}>Logout</li>
             ) : (
@@ -169,6 +166,9 @@ function App() {
             )}
             <li className="clickable-li">
               <Link to="/post-need">Post Need</Link>
+            </li>
+            <li className="clickable-li">
+              <Link to="/my-needs">My Needs</Link>
             </li>
             <li className="clickable-li">
               <Link to="/messages">Messages</Link>

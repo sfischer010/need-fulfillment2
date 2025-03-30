@@ -11,7 +11,7 @@ function Messages({ userId }) {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/messages`);
+        const response = await fetch(`http://localhost:5002/api/messages`);
         if (!response.ok) {
           throw new Error('Failed to fetch messages');
         }
@@ -39,7 +39,7 @@ function Messages({ userId }) {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/messages/reply', {
+      const response = await fetch('http://localhost:5002/api/messages/reply', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ function Messages({ userId }) {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/messages`);
+        const response = await fetch(`http://localhost:5002/api/messages`);
         if (!response.ok) {
           throw new Error('Failed to fetch messages');
         }
@@ -180,7 +180,7 @@ function Messages({ userId }) {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/messages/reply', {
+      const response = await fetch('http://localhost:5002/api/messages/reply', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -305,7 +305,7 @@ function Messages({ userId }) {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/messages`);
+        const response = await fetch(`http://localhost:5002/api/messages`);
         if (!response.ok) {
           throw new Error('Failed to fetch messages');
         }
@@ -337,7 +337,7 @@ function Messages({ userId }) {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/messages/reply', {
+      const response = await fetch('http://localhost:5002/api/messages/reply', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
