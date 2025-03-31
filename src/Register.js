@@ -173,7 +173,7 @@ function Register() {
         {statusMessage}
       </div>
       <strong>Important: Geolocate Yourself!</strong>
-<p className="nospace">Before proceeding, please click the <strong>"Geolocate Me"</strong> button. This is necessary for the Needs Map to center on your general location, ensuring that you can find nearby needs and resources effectively.</p>
+      <p className="nospace">Before proceeding, please click the <strong>"Geolocate Me"</strong> button. This is necessary for the Needs Map to center on your general location, ensuring that you can find nearby needs and resources effectively.</p>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>E-mail (this will be your username):</label>
