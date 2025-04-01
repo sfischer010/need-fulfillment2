@@ -6,7 +6,7 @@ Ensure you have the following installed on your machine:
 
 1. **Node.js**: You can download and install Node.js from https://nodejs.org/
 2. **PostgreSQL**: Download and install PostgreSQL from https://www.postgresql.org/download/  Make sure to set up a new database and note down the connection details.
-3. **Mapbox Access Token**: Sign up at https://www.mapbox.com/) and get your access token.
+3. **Mapbox Access Token**: Sign up at https://www.mapbox.com/ and get your access token.
 
 Run the following commands to set up your PostgreSQL database:
    ```bash
