@@ -279,14 +279,52 @@ app.get('/api/active-needs', async (req, res) => {
 
 app.post('/api/post-need', async (req, res) => {
   const { need, description, geoLocation } = req.body;
+
   try {
-    await pool.query('INSERT INTO UN_UserNeedsLnk (U_ID, N_ID, UN_Description, UN_Geolocation, UN_Fulfilled) VALUES ($1, $2, $3, $4, $5)', [session.userId, need, description, geoLocation, false]);
+    let uniqueGeoLocation = geoLocation;
+
+    // Check for existing records with the same geoLocation
+    const result = await pool.query(
+      'SELECT COUNT(*) AS count FROM UN_UserNeedsLnk WHERE UN_GeoLocation = $1',
+      [geoLocation]
+    );
+
+    let { count } = result.rows[0];
+
+    // Adjust geolocation until it is unique
+    while (count > 0) {
+      uniqueGeoLocation = adjustGeoLocation(uniqueGeoLocation);
+      const newResult = await pool.query(
+        'SELECT COUNT(*) AS count FROM UN_UserNeedsLnk WHERE UN_GeoLocation = $1',
+        [uniqueGeoLocation]
+      );
+      count = newResult.rows[0].count;
+    }
+
+    // Insert the record with the unique geolocation
+    await pool.query(
+      'INSERT INTO UN_UserNeedsLnk (U_ID, N_ID, UN_Description, UN_GeoLocation, UN_Fulfilled, UN_PostedDate) VALUES ($1, $2, $3, $4, $5, NOW())',
+      [session.userId, need, description, uniqueGeoLocation, false]
+    );
+
     res.status(201).send('Need posted successfully');
   } catch (error) {
     console.error('Database query error:', error);
     res.status(500).send('Internal server error');
   }
 });
+
+function adjustGeoLocation(geoLocation) {
+  // Parse the latitude and longitude
+  const [latitude, longitude] = geoLocation.split(',').map(Number);
+
+  // Increment by a small amount to create a slight adjustment
+  const adjustedLatitude = latitude + Math.random() * 0.00009 - 0.00004; // Adjust by a random amount within ±0.00002 degrees
+  const adjustedLongitude = longitude + Math.random() * 0.00009 - 0.00004; // Adjust by a random amount within ±0.00002 degrees
+
+  // Return the adjusted coordinates as a comma-separated string
+  return `${adjustedLatitude},${adjustedLongitude}`;
+}
 
 app.get('/api/user/:userId', async (req, res) => {
   const { userId } = req.params;

@@ -154,9 +154,6 @@ function App() {
             <li className="clickable-li">
               <Link to="/">Home</Link>
             </li>
-            <li className="clickable-li">
-              <Link to="/needs-map">Needs Map</Link>
-            </li>
             {isLoggedIn ? (
               <li className="clickable-li" onClick={handleLogout}>Logout</li>
             ) : (
@@ -165,14 +162,24 @@ function App() {
               </li>
             )}
             <li className="clickable-li">
-              <Link to="/post-need">Post Need</Link>
+              <Link to="/register">Register</Link>
             </li>
-            <li className="clickable-li">
-              <Link to="/my-needs">My Needs</Link>
-            </li>
-            <li className="clickable-li">
-              <Link to="/messages">Messages</Link>
-            </li>
+            {isLoggedIn && (
+            <>
+              <li className="clickable-li">
+                <Link to="/needs-map">Needs Map</Link>
+              </li>
+              <li className="clickable-li">
+                <Link to="/post-need">Post Need</Link>
+              </li>
+              <li className="clickable-li">
+                <Link to="/my-needs">My Needs</Link>
+              </li>
+              <li className="clickable-li">
+                <Link to="/messages">Messages</Link>
+              </li>
+            </>
+            )}
           </ul>
         </nav>
         <Routes>
