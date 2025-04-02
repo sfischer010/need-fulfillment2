@@ -319,8 +319,8 @@ function adjustGeoLocation(geoLocation) {
   const [latitude, longitude] = geoLocation.split(',').map(Number);
 
   // Increment by a small amount to create a slight adjustment
-  const adjustedLatitude = latitude + Math.random() * 0.00009 - 0.00004; // Adjust by a random amount within ±0.00002 degrees
-  const adjustedLongitude = longitude + Math.random() * 0.00009 - 0.00004; // Adjust by a random amount within ±0.00002 degrees
+  const adjustedLatitude = latitude + Math.random() * 0.00009 - 0.00004; // Adjust by a random amount within ±0.000045 degrees
+  const adjustedLongitude = longitude + Math.random() * 0.00009 - 0.00004; // Adjust by a random amount within ±0.000045 degrees
 
   // Return the adjusted coordinates as a comma-separated string
   return `${adjustedLatitude},${adjustedLongitude}`;

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { AuthContext } from './AuthContext';
 
-function Login({ setIsLoggedIn }) {
+function Login() {
+  const { setIsLoggedIn } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
@@ -24,7 +26,7 @@ function Login({ setIsLoggedIn }) {
       });
 
       if (response.ok) {
-        setIsLoggedIn(true);
+        setIsLoggedIn(true); // Update global logged-in state via context
         setStatusMessage('Login successful!');
         setStatusType('success');
       } else {
@@ -50,11 +52,21 @@ function Login({ setIsLoggedIn }) {
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Email:</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
         <div className="form-group">
           <label>Password:</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
         </div>
         <div className="form-group flex justify-start ml-4 mt-4">
           <label></label>
