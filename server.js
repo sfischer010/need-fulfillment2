@@ -15,14 +15,14 @@ const app = express();
 
 const secretKey = crypto.randomBytes(64).toString('hex');
 
-const geocodingClient = mbxGeocoding({ accessToken: 'pk.eyJ1IjoidGVsZXNjb3BlMDEiLCJhIjoiY200N3MyZ3lzMDUyNDJrcHcybnBvcnp0ZSJ9.M2Kzxx3IpkukrYWDbuvygw' });
+const geocodingClient = mbxGeocoding({ accessToken: 'pk.eyJ1IjoidGVsZXBlMDEiLCJhIjoiY200N3MyZ3lzMDUyNDJrcHcybnBvcnp0ZSJ9.M2Kzxx3IpkukrYWDbuvygw' });
 
+//IMPORTANT: Ensure you have the correct PostgreSQL connection details for your system here
 const pool = new Pool({
-  //user: 'stephanief0101',
-  user: 'steph',
+  user: 'user',
   host: 'localhost',
   database: 'NeedFulfillment',
-  password: 'Telescope0202',
+  password: 'password',
   port: 5432,
 });
 
@@ -58,18 +58,6 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-
-/*const jsonData = require(path.join(__dirname, 'needData.json'));
-
-// Route to fetch need points from JSON
-app.get('/api/get-need-points', async (req, res) => {
-  try {
-    res.json(jsonData);
-  } catch (error) {
-    console.error('Error fetching needs data from JSON:', error);
-    res.status(500).json({ error: 'Failed to fetch need data from JSON' });
-  }
-});*/
 app.use((req, res, next) => {
   console.log('Session user:', session.userId);
   next();
@@ -111,21 +99,76 @@ app.get('/api/get-need-data', async (req, res) => {
 });
 
 // Route to handle user registration
+// Helper function for user registration
+async function registerUser(userData) {
+  const {
+    U_Email,
+    U_Password,
+    U_FirstName,
+    U_LastName,
+    U_City,
+    U_State,
+    U_Zip,
+    U_HasNeedsNow,
+    U_RegistrationDate,
+    U_Active,
+  } = userData;
+
+  const result = await pool.query(
+    `INSERT INTO U_Users 
+      (U_Email, U_Password, U_FirstName, U_LastName, U_City, U_State, U_Zip, U_HasNeedsNow, U_RegistrationDate, U_Active)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+     RETURNING U_ID;`,
+    [
+      U_Email,
+      U_Password,
+      U_FirstName,
+      U_LastName,
+      U_City,
+      U_State,
+      U_Zip,
+      U_HasNeedsNow,
+      U_RegistrationDate,
+      U_Active,
+    ]
+  );
+
+  return result.rows[0].u_id;
+}
+
+// Helper function for nonprofit registration
+async function registerNonprofit(nonprofitData) {
+  const { orgName, address, address2, city, state, zip, ein } = nonprofitData;
+  // Only proceed if nonprofit data is provided (here determined by orgName)
+  if (!orgName) return;
+  const response = await geocodingClient.forwardGeocode({
+    query: `${address}, ${city}, ${state} ${zip}`,
+    limit: 1,
+  }).send();
+
+  const coordinates = response.body.features[0].geometry.coordinates;
+  const geoLocation = `${coordinates[1]},${coordinates[0]}`.replace(/\(|\)/g, '');
+
+  await pool.query(
+    `INSERT INTO UN_Nonprofits 
+      (UN_OrgName, UN_Address, UN_Address2, UN_City, UN_State, UN_Zip, UN_Geocoordinates, UN_EIN)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+    [orgName, address, address2, city, state, zip, geoLocation, ein]
+  );
+}
+
 app.post('/api/register', async (req, res) => {
-  const { U_Email, U_Password, U_FirstName, U_LastName, U_City, U_State, U_Zip, U_HasNeedsNow, U_RegistrationDate, U_Active } = req.body;
-
   try {
-    const result = await pool.query(`
-      INSERT INTO U_Users (U_Email, U_Password, U_FirstName, U_LastName, U_City, U_State, U_Zip, U_HasNeedsNow, U_RegistrationDate, U_Active)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      RETURNING U_ID;
-    `, [U_Email, U_Password, U_FirstName, U_LastName, U_City, U_State, U_Zip, U_HasNeedsNow, U_RegistrationDate, U_Active]);
+    const newUserId = await registerUser(req.body);
+    // If nonprofit registration data is present, call the nonprofit registration helper.
+    if (req.body.orgName) {
+      await registerNonprofit(req.body);
+    }
 
-    const newUserId = result.rows[0].u_id;
     res.json({ success: true, userId: newUserId });
   } catch (error) {
-    console.error('Error registering user:', error);
-    res.status(500).json({ error: 'Failed to register user' });
+    console.error("Error during registration:", error);
+    res.status(500).json({ error: "Registration failed" });
   }
 });
 
@@ -168,10 +211,11 @@ app.get('/api/geocode', async (req, res) => {
 
 // ProPublica Nonprofit API endpoint
 app.get('/api/nonprofits', async (req, res) => {
-  const { state, city, name } = req.query;
+  //const { state, city, name } = req.query;
   try {
     const encodedState = encodeURIComponent(`state[id]`);
-    const response = await fetch(`https://projects.propublica.org/nonprofits/api/v2/search.json?name=${name}&${encodedState}=${state}`);
+    //const response = await fetch(`https://projects.propublica.org/nonprofits/api/v2/search.json?name=${name}&${encodedState}=${state}`);
+    const response = await fetch(`https://projects.propublica.org/nonprofits/api/v2/search.json?q=${req.query.q}`);
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -182,8 +226,7 @@ app.get('/api/nonprofits', async (req, res) => {
 
 // Endpoint to register non-profit with geolocation
 app.post('/api/register-nonprofit', async (req, res) => {
-  const { orgName, address, address2, city, state, zip } = req.body;
-
+  const { orgName, address, address2, city, state, zip, ein } = req.body;
   try {
     // Geocode the address using MapBox
     const response = await geocodingClient.forwardGeocode({
@@ -192,12 +235,12 @@ app.post('/api/register-nonprofit', async (req, res) => {
     }).send();
 
     const coordinates = response.body.features[0].geometry.coordinates;
-    const geoLocation = `${coordinates[1]},${coordinates[0]}`; // latitude,longitude
-
+    const geoLocation = `${coordinates[1]},${coordinates[0]}`.replace(/\(|\)/g, ''); // latitude,longitude
+    
     // Insert non-profit data into UN_Nonprofits table
     await pool.query(
-      'INSERT INTO UN_Nonprofits (UN_OrgName, UN_Address, UN_Address2, UN_City, UN_State, UN_Zip, UN_Geocoordinates) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-      [orgName, address, address2, city, state, zip, geoLocation]
+      'INSERT INTO UN_Nonprofits (UN_OrgName, UN_Address, UN_Address2, UN_City, UN_State, UN_Zip, UN_Geocoordinates, UN_EIN) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      [orgName, address, address2, city, state, zip, geoLocation, ein]
     );
 
     res.status(201).send('Non-profit registered successfully');
@@ -212,7 +255,6 @@ app.post('/api/login', async (req, res) => {
   try {
     const result = await pool.query('SELECT U_ID, U_Email, U_Password FROM U_Users WHERE U_Email = $1', [email]);
     const user = result.rows[0];
-    console.log(user);
     if (user && user.u_password && password) {
       //const match = await bcrypt.compare(password, user.u_password); //TODO: Fix, ensure this is done.
       const match = true;
@@ -403,7 +445,6 @@ app.get('/api/messages', async (req, res) => {
       ORDER BY M.UN_Date DESC
     `, [session.userId]);
 
-    console.log(result.rows); // Debug log to check the result
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching messages:', err);
@@ -448,6 +489,44 @@ app.post('/api/messages/reply', async (req, res) => {
   } catch (err) {
     console.error('Error inserting reply:', err);
     res.status(500).send('Server error');
+  }
+});
+
+app.get('/api/get-profile', async (req, res) => {
+  if (!session.userId) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  try {
+    const result = await pool.query(`
+      SELECT 
+        U_Email, 
+        U_FirstName, 
+        U_LastName, 
+        U_City, 
+        U_State, 
+        U_Zip, 
+        U_HasNeedsNow, 
+        U_GeoLocation, 
+        N.UN_OrgName AS NonprofitName,
+        N.UN_Address AS ManualNonprofitAddress,
+        N.UN_City AS ManualNonprofitCity,
+        N.UN_State AS ManualNonprofitState,
+        N.UN_Zip AS ManualNonprofitZip,
+        N.UN_EIN AS NonprofitEIN
+      FROM U_Users U
+      LEFT JOIN UN_Nonprofits N ON U.U_ID = N.U_ID
+      WHERE U.U_ID = $1
+    `, [session.userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).send('Profile not found');
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).send('Internal server error');
   }
 });
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import NonprofitSearch from './NonprofitSearch';
 
 function Register() {
   const [email, setEmail] = useState('');
@@ -8,6 +9,7 @@ function Register() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [zip, setZip] = useState('');
+  const [orgName, setOrgName] = useState('');
   const [needsNow, setNeedsNow] = useState(false);
   const [geoLocation, setGeoLocation] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
@@ -15,7 +17,18 @@ function Register() {
   const [isStatusVisible, setIsStatusVisible] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [isGeolocateClicked, setIsGeolocateClicked] = useState(false); // Track if geolocate is clicked
-
+  const [isNonprofit, setIsNonprofit] = useState(false);
+  // auto-search mode nonprofit details
+  const [nonprofitName, setNonprofitName] = useState('');
+  // toggle to allow manual entry for nonprofit information
+  const [isManualNonprofit, setIsManualNonprofit] = useState(false);
+  // manual nonprofit fields
+  const [manualNonprofitName, setManualNonprofitName] = useState('');
+  const [manualNonprofitAddress, setManualNonprofitAddress] = useState('');
+  const [manualNonprofitCity, setManualNonprofitCity] = useState('');
+  const [manualNonprofitState, setManualNonprofitState] = useState('');
+  const [manualNonprofitZip, setManualNonprofitZip] = useState('');
+  const [nonprofitEIN, setNonprofitEIN] = useState('');
   const stateAbbreviationMapping = {
     "Alabama": "AL",
     "Alaska": "AK",
@@ -124,6 +137,27 @@ function Register() {
       setPasswordError('');
     }
 
+    // Determine the correct orgName and nonprofit details
+    let finalOrgName = orgName;
+    let nonprofitDetails = {};
+
+    if (isNonprofit) {
+      if (isManualNonprofit) {
+        finalOrgName = manualNonprofitName;
+        nonprofitDetails = {
+          address: manualNonprofitAddress,
+          city: manualNonprofitCity,
+          state: manualNonprofitState,
+          zip: manualNonprofitZip,
+          ein: nonprofitEIN,
+        };
+      } else {
+        nonprofitDetails = {
+          ein: nonprofitEIN,
+        };
+      }
+    }
+
     const userData = {
       U_Email: email,
       U_Password: password,
@@ -136,6 +170,8 @@ function Register() {
       U_RegistrationDate: new Date(),
       U_Active: true,
       U_GeoLocation: geoLocation,
+      orgName: finalOrgName, // Include the correct orgName
+      ...nonprofitDetails, // Spread nonprofit details into the userData object
     };
 
     try {
@@ -164,7 +200,7 @@ function Register() {
   };
 
   return (
-    <div className="form-container w-full p-6 space-y-6 text-cyan-950">
+    <div className="form-container w-full p-6 text-cyan-950">
       <h2 className="text-2xl font-bold">Registration</h2>
       <div
         id="status"
@@ -175,6 +211,9 @@ function Register() {
       <strong>Important: Geolocate Yourself!</strong>
       <p className="nospace">Before proceeding, please click the <strong>"Geolocate Me"</strong> button. This is necessary for the Needs Map to center on your general location, ensuring that you can find nearby needs and resources effectively.</p>
       <form onSubmit={handleSubmit}>
+      <div className="form-group flex justify-start mb-4">
+        <button type="button" className="bg-green-600 text-white" onClick={handleGeolocate}>Geolocate Me</button>
+      </div>
         <div className="form-group">
           <label>E-mail (this will be your username):</label>
           <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -259,13 +298,133 @@ function Register() {
           <input type="text" value={zip} onChange={(e) => setZip(e.target.value)} required />
         </div>
         <div className="form-group">
-          <label></label>       
           <input type="checkbox" checked={needsNow} onChange={(e) => setNeedsNow(e.target.checked)} />I have needs now
         </div>
-        <div className="form-group flex justify-start mt-4">
-          <label></label>    
-          <button type="button" onClick={handleGeolocate}>Geolocate Me</button>
+        <div className="form-group">
+          <input
+            type="checkbox"
+            checked={isNonprofit}
+            onChange={(e) => setIsNonprofit(e.target.checked)}
+          />
+          I am operating as part of a nonprofit helping those in need
         </div>
+        {isNonprofit && (
+          <div className="nonprofit-section space-y-6 border p-6 rounded-lg w-full mx-auto bg-gray-50">
+            {/* Toggle button to switch between auto lookup and manual entry */}
+            <div className="form-group text-center">
+              <button
+                type="button"
+                onClick={() => setIsManualNonprofit((prev) => !prev)}
+                className="text-sm text-blue-600 underline"
+              >
+                {isManualNonprofit ? "Use Auto Lookup" : "Can't find your nonprofit? Enter manually"}
+              </button>
+            </div>
+
+            {/* Conditional rendering based on selected mode */}
+            {!isManualNonprofit ? (
+                <div>
+              <div className="form-group mb-4">
+                  <strong><label>Search for your nonprofit:</label></strong>
+                </div>
+                <NonprofitSearch 
+                  onSelectNonprofit={(selectedName) => {
+                    console.log("Selected Nonprofit:", selectedName); // Debug log
+                    setOrgName(selectedName); // Ensure orgName is updated
+                  }} 
+                />
+                {orgName && (
+                  <div className="mt-4">
+                    <strong>Selected Nonprofit:</strong> {orgName}
+                  </div>
+                )}
+                <div className="form-group mt-4">
+                  <label className="block mb-1">Nonprofit EIN:</label>
+                  <input
+                    type="text"
+                    value={nonprofitEIN}
+                    onChange={(e) => setNonprofitEIN(e.target.value)}
+                    placeholder="Enter Nonprofit EIN"
+                    required
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="manual-nonprofit-inputs">
+                <div className="form-group">
+                  <label className="block mb-1">Nonprofit Name:</label>
+                  <input
+                    type="text"
+                    value={manualNonprofitName}
+                    onChange={(e) => setManualNonprofitName(e.target.value)}
+                    placeholder="Enter Nonprofit Name"
+                    required
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="block mb-1">Nonprofit Address:</label>
+                  <input
+                    type="text"
+                    value={manualNonprofitAddress}
+                    onChange={(e) => setManualNonprofitAddress(e.target.value)}
+                    placeholder="Enter Nonprofit Address"
+                    required
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="block mb-1">Nonprofit City:</label>
+                  <input
+                    type="text"
+                    value={manualNonprofitCity}
+                    onChange={(e) => setManualNonprofitCity(e.target.value)}
+                    placeholder="Enter Nonprofit City"
+                    required
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="block mb-1">Nonprofit State:</label>
+                  <select
+                    value={manualNonprofitState}
+                    onChange={(e) => setManualNonprofitState(e.target.value)}
+                    required
+                    className="w-full border rounded px-3 py-2"
+                  >
+                    <option value="">Select State</option>
+                    <option value="AL">Alabama</option>
+                    <option value="AK">Alaska</option>
+                    {/* Add additional states as needed */}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="block mb-1">Nonprofit Zip:</label>
+                  <input
+                    type="text"
+                    value={manualNonprofitZip}
+                    onChange={(e) => setManualNonprofitZip(e.target.value)}
+                    placeholder="Enter Nonprofit Zip"
+                    required
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="block mb-1">Nonprofit EIN:</label>
+                  <input
+                    type="text"
+                    value={nonprofitEIN}
+                    onChange={(e) => setNonprofitEIN(e.target.value)}
+                    placeholder="Enter Nonprofit EIN"
+                    required
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         <div className="form-group flex justify-start mt-4">
           <label></label>    
           <button type="submit">Register</button>
