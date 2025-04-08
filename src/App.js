@@ -9,6 +9,7 @@ import PostNeed from './PostNeed';
 import Messages from './Messages';
 import MyProfile from './MyProfile';
 import SendMessage from './SendMessage';
+import TermsOfService from './TermsOfService';
 import './tailwind.css';
 import './App.css';
 
@@ -95,6 +96,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
           
           {isLoggedIn ? (
             <>
@@ -132,16 +134,8 @@ function App() {
           <p className="text-white">
             &copy; {new Date().getFullYear()} Need Fulfillment. All rights reserved.
           </p>
-          <p className="text-sm text-gray-200">
-            This project is licensed under the GNU General Public License v3.0.
-            You may redistribute and modify this software under the terms of the
-            license. For full details, visit the{' '}
-            <a
-              href="https://www.gnu.org/licenses/gpl-3.0.html"
-              className="text-blue-400 hover:underline"
-            >
-              GPL-3.0 License
-            </a>.
+          <p className="text-white">
+            <Link to="/terms-of-service" className="text-blue-400 hover:underline">Terms of Service</Link>
           </p>
         </footer>
       </div>

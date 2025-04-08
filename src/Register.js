@@ -18,6 +18,7 @@ function Register() {
   const [passwordError, setPasswordError] = useState('');
   const [isGeolocateClicked, setIsGeolocateClicked] = useState(false); // Track if geolocate is clicked
   const [isNonprofit, setIsNonprofit] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false); // Track if the user has registered successfully
   // auto-search mode nonprofit details
   const [nonprofitName, setNonprofitName] = useState('');
   // toggle to allow manual entry for nonprofit information
@@ -184,8 +185,9 @@ function Register() {
       });
 
       if (response.ok) {
-        setStatusMessage('User registered successfully!');
+        setStatusMessage('Registered successfully! Please check your email to verify your account.');
         setStatusType('success');
+        setIsRegistered(true); // Set the registration status to true
       } else {
         setStatusMessage('Failed to register user.');
         setStatusType('failure');
@@ -208,228 +210,200 @@ function Register() {
       >
         {statusMessage}
       </div>
-      <strong>Important: Geolocate Yourself!</strong>
-      <p className="nospace">Before proceeding, please click the <strong>"Geolocate Me"</strong> button. This is necessary for the Needs Map to center on your general location, ensuring that you can find nearby needs and resources effectively.</p>
-      <form onSubmit={handleSubmit}>
-      <div className="form-group flex justify-start mb-4">
-        <button type="button" className="bg-green-600 text-white" onClick={handleGeolocate}>Geolocate Me</button>
-      </div>
-        <div className="form-group">
-          <label>E-mail (this will be your username):</label>
-          <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <label className="w-1/3">Password:</label>
-          <div className="w-2/3 flex flex-col">
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            {passwordError && <p className="text-red-500 mt-1">{passwordError}</p>}
+      <div className="terms-blurb text-sm mt-4">
+        <p>
+          By registering, you agree to our{" "}
+          <a
+            href="/terms-of-service"
+            className="text-blue-600 underline hover:text-blue-800"
+          >
+            Terms of Service
+        </a>.
+      </p>
+    </div>
+      {!isRegistered && ( // Hide the form if the user has registered successfully
+        <>
+          <strong>Important: Geolocate Yourself!</strong>
+          <p className="nospace">Before proceeding, please click the <strong>"Geolocate Me"</strong> button. This is necessary for the Needs Map to center on your general location, ensuring that you can find nearby needs and resources effectively.</p>
+          <form onSubmit={handleSubmit}>
+          <div className="form-group flex justify-start mb-4">
+            <button type="button" className="bg-green-600 text-white" onClick={handleGeolocate}>Geolocate Me</button>
           </div>
-        </div>
-        <div className="form-group">
-          <label>First Name:</label>
-          <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <label>Last Name:</label>
-          <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <label>City:</label>
-          <input type="text" value={city} onChange={(e) => setCity(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <label>State:</label>
-          <select value={state} onChange={(e) => setState(e.target.value)} required>
-            <option value="">Select State</option>
-            <option value="AL">Alabama</option>
-            <option value="AK">Alaska</option>
-            <option value="AZ">Arizona</option>
-            <option value="AR">Arkansas</option>
-            <option value="CA">California</option>
-            <option value="CO">Colorado</option>
-            <option value="CT">Connecticut</option>
-            <option value="DE">Delaware</option>
-            <option value="FL">Florida</option>
-            <option value="GA">Georgia</option>
-            <option value="HI">Hawaii</option>
-            <option value="ID">Idaho</option>
-            <option value="IL">Illinois</option>
-            <option value="IN">Indiana</option>
-            <option value="IA">Iowa</option>
-            <option value="KS">Kansas</option>
-            <option value="KY">Kentucky</option>
-            <option value="LA">Louisiana</option>
-            <option value="ME">Maine</option>
-            <option value="MD">Maryland</option>
-            <option value="MA">Massachusetts</option>
-            <option value="MI">Michigan</option>
-            <option value="MN">Minnesota</option>
-            <option value="MS">Mississippi</option>
-            <option value="MO">Missouri</option>
-            <option value="MT">Montana</option>
-            <option value="NE">Nebraska</option>
-            <option value="NV">Nevada</option>
-            <option value="NH">New Hampshire</option>
-            <option value="NJ">New Jersey</option>
-            <option value="NM">New Mexico</option>
-            <option value="NY">New York</option>
-            <option value="NC">North Carolina</option>
-            <option value="ND">North Dakota</option>
-            <option value="OH">Ohio</option>
-            <option value="OK">Oklahoma</option>
-            <option value="OR">Oregon</option>
-            <option value="PA">Pennsylvania</option>
-            <option value="RI">Rhode Island</option>
-            <option value="SC">South Carolina</option>
-            <option value="SD">South Dakota</option>
-            <option value="TN">Tennessee</option>
-            <option value="TX">Texas</option>
-            <option value="UT">Utah</option>
-            <option value="VT">Vermont</option>
-            <option value="VA">Virginia</option>
-            <option value="WA">Washington</option>
-            <option value="WV">West Virginia</option>
-            <option value="WI">Wisconsin</option>
-            <option value="WY">Wyoming</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label>Zip:</label>
-          <input type="text" value={zip} onChange={(e) => setZip(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <input type="checkbox" checked={needsNow} onChange={(e) => setNeedsNow(e.target.checked)} />I have needs now
-        </div>
-        <div className="form-group">
-          <input
-            type="checkbox"
-            checked={isNonprofit}
-            onChange={(e) => setIsNonprofit(e.target.checked)}
-          />
-          I am operating as part of a nonprofit helping those in need
-        </div>
-        {isNonprofit && (
-          <div className="nonprofit-section space-y-6 border p-6 rounded-lg w-full mx-auto bg-gray-50">
-            {/* Toggle button to switch between auto lookup and manual entry */}
-            <div className="form-group text-center">
-              <button
-                type="button"
-                onClick={() => setIsManualNonprofit((prev) => !prev)}
-                className="text-sm text-blue-600 underline"
-              >
-                {isManualNonprofit ? "Use Auto Lookup" : "Can't find your nonprofit? Enter manually"}
-              </button>
+            <div className="form-group">
+              <label>E-mail (this will be your username):</label>
+              <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-
-            {/* Conditional rendering based on selected mode */}
-            {!isManualNonprofit ? (
-                <div>
-              <div className="form-group mb-4">
-                  <strong><label>Search for your nonprofit:</label></strong>
+            <div className="form-group">
+              <label className="w-1/3">Password:</label>
+              <div className="w-2/3 flex flex-col">
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                {passwordError && <p className="text-red-500 mt-1">{passwordError}</p>}
+              </div>
+            </div>
+            <div className="form-group">
+              <label>First Name:</label>
+              <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+            </div>
+            <div className="form-group">
+              <label>Last Name:</label>
+              <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+            </div>
+            <div className="form-group">
+              <label>City:</label>
+              <input type="text" value={city} onChange={(e) => setCity(e.target.value)} required />
+            </div>
+            <div className="form-group">
+              <label>State:</label>
+              <select value={state} onChange={(e) => setState(e.target.value)} required>
+                <option value="">Select State</option>
+                {Object.entries(stateAbbreviationMapping).map(([stateName, stateAbbreviation]) => (
+                  <option key={stateAbbreviation} value={stateAbbreviation}>
+                    {stateName}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Zip:</label>
+              <input type="text" value={zip} onChange={(e) => setZip(e.target.value)} required />
+            </div>
+            <div className="form-group">
+              <input type="checkbox" checked={needsNow} onChange={(e) => setNeedsNow(e.target.checked)} />I have needs now
+            </div>
+            <div className="form-group">
+              <input
+                type="checkbox"
+                checked={isNonprofit}
+                onChange={(e) => setIsNonprofit(e.target.checked)}
+              />
+              I am operating as part of a nonprofit helping those in need
+            </div>
+            {isNonprofit && (
+              <div className="nonprofit-section space-y-6 border p-6 rounded-lg w-full mx-auto bg-gray-50">
+                {/* Toggle button to switch between auto lookup and manual entry */}
+                <div className="form-group text-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsManualNonprofit((prev) => !prev)}
+                    className="text-sm text-blue-600 underline"
+                  >
+                    {isManualNonprofit ? "Use Auto Lookup" : "Can't find your nonprofit? Enter manually"}
+                  </button>
                 </div>
-                <NonprofitSearch 
-                  onSelectNonprofit={(selectedName) => {
-                    console.log("Selected Nonprofit:", selectedName); // Debug log
-                    setOrgName(selectedName); // Ensure orgName is updated
-                  }} 
-                />
-                {orgName && (
-                  <div className="mt-4">
-                    <strong>Selected Nonprofit:</strong> {orgName}
+
+                {/* Conditional rendering based on selected mode */}
+                {!isManualNonprofit ? (
+                    <div>
+                  <div className="form-group mb-4">
+                      <strong><label>Search for your nonprofit:</label></strong>
+                    </div>
+                    <NonprofitSearch 
+                      onSelectNonprofit={(selectedName) => {
+                        console.log("Selected Nonprofit:", selectedName); // Debug log
+                        setOrgName(selectedName); // Ensure orgName is updated
+                      }} 
+                    />
+                    {orgName && (
+                      <div className="mt-4">
+                        <strong>Selected Nonprofit:</strong> {orgName}
+                      </div>
+                    )}
+                    <div className="form-group mt-4">
+                      <label className="block mb-1">Nonprofit EIN:</label>
+                      <input
+                        type="text"
+                        value={nonprofitEIN}
+                        onChange={(e) => setNonprofitEIN(e.target.value)}
+                        placeholder="Enter Nonprofit EIN"
+                        required
+                        className="w-full border rounded px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="manual-nonprofit-inputs">
+                    <div className="form-group">
+                      <label className="block mb-1">Nonprofit Name:</label>
+                      <input
+                        type="text"
+                        value={manualNonprofitName}
+                        onChange={(e) => setManualNonprofitName(e.target.value)}
+                        placeholder="Enter Nonprofit Name"
+                        required
+                        className="w-full border rounded px-3 py-2"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="block mb-1">Nonprofit Address:</label>
+                      <input
+                        type="text"
+                        value={manualNonprofitAddress}
+                        onChange={(e) => setManualNonprofitAddress(e.target.value)}
+                        placeholder="Enter Nonprofit Address"
+                        required
+                        className="w-full border rounded px-3 py-2"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="block mb-1">Nonprofit City:</label>
+                      <input
+                        type="text"
+                        value={manualNonprofitCity}
+                        onChange={(e) => setManualNonprofitCity(e.target.value)}
+                        placeholder="Enter Nonprofit City"
+                        required
+                        className="w-full border rounded px-3 py-2"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="block mb-1">Nonprofit State:</label>
+                      <select
+                        value={manualNonprofitState}
+                        onChange={(e) => setManualNonprofitState(e.target.value)}
+                        required
+                        className="w-full border rounded px-3 py-2"
+                      >
+                        <option value="">Select State</option>
+                        {Object.entries(stateAbbreviationMapping).map(([stateName, stateAbbreviation]) => (
+                          <option key={stateAbbreviation} value={stateAbbreviation}>
+                            {stateName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label className="block mb-1">Nonprofit Zip:</label>
+                      <input
+                        type="text"
+                        value={manualNonprofitZip}
+                        onChange={(e) => setManualNonprofitZip(e.target.value)}
+                        placeholder="Enter Nonprofit Zip"
+                        required
+                        className="w-full border rounded px-3 py-2"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="block mb-1">Nonprofit EIN:</label>
+                      <input
+                        type="text"
+                        value={nonprofitEIN}
+                        onChange={(e) => setNonprofitEIN(e.target.value)}
+                        placeholder="Enter Nonprofit EIN"
+                        required
+                        className="w-full border rounded px-3 py-2"
+                      />
+                    </div>
                   </div>
                 )}
-                <div className="form-group mt-4">
-                  <label className="block mb-1">Nonprofit EIN:</label>
-                  <input
-                    type="text"
-                    value={nonprofitEIN}
-                    onChange={(e) => setNonprofitEIN(e.target.value)}
-                    placeholder="Enter Nonprofit EIN"
-                    required
-                    className="w-full border rounded px-3 py-2"
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="manual-nonprofit-inputs">
-                <div className="form-group">
-                  <label className="block mb-1">Nonprofit Name:</label>
-                  <input
-                    type="text"
-                    value={manualNonprofitName}
-                    onChange={(e) => setManualNonprofitName(e.target.value)}
-                    placeholder="Enter Nonprofit Name"
-                    required
-                    className="w-full border rounded px-3 py-2"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block mb-1">Nonprofit Address:</label>
-                  <input
-                    type="text"
-                    value={manualNonprofitAddress}
-                    onChange={(e) => setManualNonprofitAddress(e.target.value)}
-                    placeholder="Enter Nonprofit Address"
-                    required
-                    className="w-full border rounded px-3 py-2"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block mb-1">Nonprofit City:</label>
-                  <input
-                    type="text"
-                    value={manualNonprofitCity}
-                    onChange={(e) => setManualNonprofitCity(e.target.value)}
-                    placeholder="Enter Nonprofit City"
-                    required
-                    className="w-full border rounded px-3 py-2"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block mb-1">Nonprofit State:</label>
-                  <select
-                    value={manualNonprofitState}
-                    onChange={(e) => setManualNonprofitState(e.target.value)}
-                    required
-                    className="w-full border rounded px-3 py-2"
-                  >
-                    <option value="">Select State</option>
-                    <option value="AL">Alabama</option>
-                    <option value="AK">Alaska</option>
-                    {/* Add additional states as needed */}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="block mb-1">Nonprofit Zip:</label>
-                  <input
-                    type="text"
-                    value={manualNonprofitZip}
-                    onChange={(e) => setManualNonprofitZip(e.target.value)}
-                    placeholder="Enter Nonprofit Zip"
-                    required
-                    className="w-full border rounded px-3 py-2"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="block mb-1">Nonprofit EIN:</label>
-                  <input
-                    type="text"
-                    value={nonprofitEIN}
-                    onChange={(e) => setNonprofitEIN(e.target.value)}
-                    placeholder="Enter Nonprofit EIN"
-                    required
-                    className="w-full border rounded px-3 py-2"
-                  />
-                </div>
               </div>
             )}
-          </div>
-        )}
-        <div className="form-group flex justify-start mt-4">
-          <label></label>    
-          <button type="submit">Register</button>
-        </div>
-      </form>
+            <div className="form-group flex justify-start mt-4">
+              <label></label>    
+              <button type="submit">Register</button>
+            </div>
+          </form>
+        </>
+      )}
     </div>
   );
 }

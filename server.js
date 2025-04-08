@@ -8,6 +8,8 @@ const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const pgSession = require('connect-pg-simple')(session);
 const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
+const nodemailer = require('nodemailer');
+const mailgun = require('nodemailer-mailgun-transport');
 require('dotenv').config();
 const port = process.env.PORT || 5002;
 
@@ -15,14 +17,14 @@ const app = express();
 
 const secretKey = crypto.randomBytes(64).toString('hex');
 
-const geocodingClient = mbxGeocoding({ accessToken: 'pk.eyJ1IjoidGVsZXBlMDEiLCJhIjoiY200N3MyZ3lzMDUyNDJrcHcybnBvcnp0ZSJ9.M2Kzxx3IpkukrYWDbuvygw' });
+const geocodingClient = mbxGeocoding({ accessToken: 'pk.eyJ1IjoidGVsZXNjb3BlMDEiLCJhIjoiY200N3MyZ3lzMDUyNDJrcHcybnBvcnp0ZSJ9.M2Kzxx3IpkukrYWDbuvygw' });
 
-//IMPORTANT: Ensure you have the correct PostgreSQL connection details for your system here
+//IMPORTANT: Ensure you have the correct PostgreSQL connection details for your system
 const pool = new Pool({
-  user: 'user',
+  user: 'steph',
   host: 'localhost',
   database: 'NeedFulfillment',
-  password: 'password',
+  password: 'Telescope0202',
   port: 5432,
 });
 
@@ -62,6 +64,50 @@ app.use((req, res, next) => {
   console.log('Session user:', session.userId);
   next();
 });
+
+// Configure nodemailer transporter with Mailgun
+const transporter = nodemailer.createTransport(
+  mailgun({
+    auth: {
+      api_key: 'a780717d2cb29221a1b2d15025a377b1-2b77fbb2-af7146a7', // Replace with your Mailgun API key
+      domain: 'sandbox5e8de1a5610c4a67bbb50edf12d346fd.mailgun.org',  // Replace with your Mailgun domain
+    },
+  })
+);
+
+// Function to send verification email
+async function sendVerificationEmail(email, firstName, verificationLink) {
+  const mailOptions = {
+    from: 'no-reply@sandbox5e8de1a5610c4a67bbb50edf12d346fd.mailgun.org', // Replace with your Mailgun domain
+    to: email,
+    subject: 'Verify Your Email Address',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+        <div style="background-color: #2c2e43; padding: 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Need Fulfillment</h1>
+        </div>
+        <div style="padding: 20px;">
+          <p style="font-size: 16px; color: #333;">Hi ${firstName},</p>
+          <p style="font-size: 16px; color: #333;">Thank you for registering with <strong>Need Fulfillment</strong>. Please verify your email address by clicking the link below:</p>
+          <div style="text-align: center; margin: 20px 0;">
+            <a href="${verificationLink}" style="background-color: #007bff; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px;">Verify Email</a>
+          </div>
+          <p style="font-size: 14px; color: #666;">If you did not register for Need Fulfillment, please ignore this email.</p>
+        </div>
+        <div style="background-color: #f8f9fa; padding: 10px; text-align: center; font-size: 12px; color: #666;">
+          &copy; ${new Date().getFullYear()} Need Fulfillment. All rights reserved.
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Verification email sent successfully');
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+  }
+}
 
 // Route to fetch need points from the database
 app.get('/api/get-need-data', async (req, res) => {
@@ -160,10 +206,22 @@ async function registerNonprofit(nonprofitData) {
 app.post('/api/register', async (req, res) => {
   try {
     const newUserId = await registerUser(req.body);
-    // If nonprofit registration data is present, call the nonprofit registration helper.
     if (req.body.orgName) {
       await registerNonprofit(req.body);
     }
+
+    // Generate a verification link
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationLink = `http://localhost:5002/verify?token=${verificationToken}`;
+
+    // Save the token in the database
+    await pool.query(
+      `INSERT INTO VerificationTokens (U_ID, Token) VALUES ($1, $2)`,
+      [newUserId, verificationToken]
+    );
+
+    // Send the verification email
+    await sendVerificationEmail(req.body.U_Email, req.body.U_FirstName, verificationLink);
 
     res.json({ success: true, userId: newUserId });
   } catch (error) {
@@ -527,6 +585,46 @@ app.get('/api/get-profile', async (req, res) => {
   } catch (error) {
     console.error('Error fetching profile:', error);
     res.status(500).send('Internal server error');
+  }
+});
+
+// Route to handle email verification
+app.get('/verify', async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).send('Verification token is required.');
+  }
+
+  try {
+    // Check if the token exists in the VerificationTokens table
+    const result = await pool.query(
+      `SELECT U_ID FROM VerificationTokens WHERE Token = $1`,
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).send('Invalid or expired verification token.');
+    }
+
+    const userId = result.rows[0].u_id;
+
+    // Mark the user as verified
+    await pool.query(
+      `UPDATE U_Users SET U_Active = TRUE WHERE U_ID = $1`,
+      [userId]
+    );
+
+    // Delete the token from the VerificationTokens table
+    await pool.query(
+      `DELETE FROM VerificationTokens WHERE Token = $1`,
+      [token]
+    );
+
+    res.send('Email verified successfully. You can now log in.');
+  } catch (error) {
+    console.error('Error verifying email:', error);
+    res.status(500).send('Internal server error.');
   }
 });
 
