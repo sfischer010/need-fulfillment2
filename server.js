@@ -69,8 +69,8 @@ app.use((req, res, next) => {
 const transporter = nodemailer.createTransport(
   mailgun({
     auth: {
-      api_key: 'a780717d2cb29221a1b2d15025a377b1-2b77fbb2-af7146a7', // Replace with your Mailgun API key
-      domain: 'sandbox5e8de1a5610c4a67bbb50edf12d346fd.mailgun.org',  // Replace with your Mailgun domain
+      api_key: process.env.MAILGUN_API_KEY, // Use environment variable for API key
+      domain: process.env.MAILGUN_DOMAIN,  // Use environment variable for domain
     },
   })
 );
@@ -184,7 +184,7 @@ async function registerUser(userData) {
 
 // Helper function for nonprofit registration
 async function registerNonprofit(nonprofitData) {
-  const { orgName, address, address2, city, state, zip, ein } = nonprofitData;
+  const { orgName, address, address2, city, state, zip, ein, description } = nonprofitData;
   // Only proceed if nonprofit data is provided (here determined by orgName)
   if (!orgName) return;
   const response = await geocodingClient.forwardGeocode({
@@ -197,9 +197,9 @@ async function registerNonprofit(nonprofitData) {
 
   await pool.query(
     `INSERT INTO UN_Nonprofits 
-      (UN_OrgName, UN_Address, UN_Address2, UN_City, UN_State, UN_Zip, UN_Geocoordinates, UN_EIN)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-    [orgName, address, address2, city, state, zip, geoLocation, ein]
+      (UN_OrgName, UN_Address, UN_Address2, UN_City, UN_State, UN_Zip, UN_Geocoordinates, UN_EIN, UN_Description)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    [orgName, address, address2, city, state, zip, geoLocation, ein, description]
   );
 }
 
@@ -208,6 +208,9 @@ app.post('/api/register', async (req, res) => {
     const newUserId = await registerUser(req.body);
     if (req.body.orgName) {
       await registerNonprofit(req.body);
+    }
+    else{
+      console.log('! req.body.orgName');
     }
 
     // Generate a verification link
@@ -305,6 +308,35 @@ app.post('/api/register-nonprofit', async (req, res) => {
   } catch (error) {
     console.error('Error registering non-profit:', error);
     res.status(500).send('Internal server error');
+  }
+});
+
+app.get('/api/get-nonprofits', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT UN_OrgName AS name, UN_Geocoordinates::text AS geolocation, UN_Description as description
+      FROM UN_Nonprofits;
+    `);
+
+    const geoJson = {
+      type: 'FeatureCollection',
+      features: result.rows.map(row => ({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: String(row.geolocation).replace(/\(|\)/g, '').split(',').reverse().map(Number), // Remove parentheses and split
+        },
+        properties: {
+          name: row.name,
+          description: row.description,
+        },
+      })),
+    };
+
+    res.json(geoJson);
+  } catch (error) {
+    console.error('Error fetching nonprofits data:', error);
+    res.status(500).json({ error: 'Failed to fetch nonprofits data' });
   }
 });
 

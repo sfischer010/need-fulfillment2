@@ -21,6 +21,7 @@ function Register() {
   const [isRegistered, setIsRegistered] = useState(false); // Track if the user has registered successfully
   // auto-search mode nonprofit details
   const [nonprofitName, setNonprofitName] = useState('');
+  const [nonprofitDescription, setNonprofitDescription] = useState(''); // Nonprofit description field
   // toggle to allow manual entry for nonprofit information
   const [isManualNonprofit, setIsManualNonprofit] = useState(false);
   // manual nonprofit fields
@@ -154,6 +155,7 @@ function Register() {
         };
       } else {
         nonprofitDetails = {
+          description: nonprofitDescription,
           ein: nonprofitEIN,
         };
       }
@@ -309,7 +311,18 @@ function Register() {
                       </div>
                     )}
                     <div className="form-group mt-4">
-                      <label className="block mb-1">Nonprofit EIN:</label>
+                      <label className="block mb-1">Description:</label>
+                      <textarea
+                        value={nonprofitDescription}
+                        onChange={(e) => setNonprofitDescription(e.target.value)}
+                        placeholder="Enter Nonprofit Description"
+                        required
+                        maxLength="255"
+                        className="w-full border rounded px-3 py-2"
+                      />
+                    </div>
+                    <div className="form-group mt-4">
+                      <label className="block mb-1">EIN:</label>
                       <input
                         type="text"
                         value={nonprofitEIN}

@@ -222,12 +222,24 @@ button[type="submit"]:hover {
   box-sizing: border-box;
 }
 
+.popup-name-nonprofit {
+  background-color: #000000;
+  color: white;
+  text-align: center;
+  margin: 0;
+  width: 100%;
+  padding: 10px;
+  display: block;
+  box-sizing: border-box;
+}
+
 .popup-text{
   padding: 8px;
   word-break: break-word; 
   overflow-wrap: break-word; 
   display: block;
   width: 120px;
+  text-align: left;
 }
 
 .mapboxgl-popup-close-button {
