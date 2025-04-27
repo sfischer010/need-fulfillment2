@@ -1,3 +1,13 @@
+require('dotenv').config(); // Ensure this is at the top
+
+console.log('Loaded Environment Variables:', {
+  SMTP_HOST: process.env.SMTP_HOST,
+  SMTP_PORT: process.env.SMTP_PORT,
+  SMTP_SECURE: process.env.SMTP_SECURE,
+  SMTP_USER: process.env.SMTP_USER,
+  SMTP_PASS: process.env.SMTP_PASS,
+});
+
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -9,9 +19,7 @@ const bcrypt = require('bcrypt');
 const pgSession = require('connect-pg-simple')(session);
 const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
 const nodemailer = require('nodemailer');
-const mailgun = require('nodemailer-mailgun-transport');
-require('dotenv').config();
-const port = process.env.PORT || 5002;
+const port = 5002;
 
 const app = express();
 
@@ -24,7 +32,7 @@ const pool = new Pool({
   user: 'steph',
   host: 'localhost',
   database: 'NeedFulfillment',
-  password: 'Telescope0202',
+  password: process.env.DATABASE_PASS,
   port: 5432,
 });
 
@@ -65,20 +73,30 @@ app.use((req, res, next) => {
   next();
 });
 
-// Configure nodemailer transporter with Mailgun
-const transporter = nodemailer.createTransport(
-  mailgun({
-    auth: {
-      api_key: process.env.MAILGUN_API_KEY, // Use environment variable for API key
-      domain: process.env.MAILGUN_DOMAIN,  // Use environment variable for domain
-    },
-  })
-);
+// Configure nodemailer transporter with SMTP
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: process.env.SMTP_SECURE === 'true',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+  logger: true, // Enable logging
+  debug: true,
+});
+
+console.log('SMTP Configuration:', {
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: process.env.SMTP_SECURE,
+  user: process.env.SMTP_USER,
+});
 
 // Function to send verification email
 async function sendVerificationEmail(email, firstName, verificationLink) {
   const mailOptions = {
-    from: 'no-reply@sandbox5e8de1a5610c4a67bbb50edf12d346fd.mailgun.org', // Replace with your Mailgun domain
+    from: '"Need Fulfillment" <verify@need-fulfillment.org>',
     to: email,
     subject: 'Verify Your Email Address',
     html: `
@@ -102,12 +120,20 @@ async function sendVerificationEmail(email, firstName, verificationLink) {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log('Verification email sent successfully');
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Verification email sent successfully:', info.messageId);
   } catch (error) {
     console.error('Error sending verification email:', error);
   }
 }
+
+// Example usage:
+/*
+sendVerificationEmail(
+  'user@example.com', 
+  'Stephanie', 
+  'https://localhost:3000/verify?token=abc123'
+);*/
 
 // Route to fetch need points from the database
 app.get('/api/get-need-data', async (req, res) => {
@@ -215,7 +241,7 @@ app.post('/api/register', async (req, res) => {
 
     // Generate a verification link
     const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationLink = `http://localhost:5002/verify?token=${verificationToken}`;
+    const verificationLink = `http://localhost:3000/verify?token=${verificationToken}`;
 
     // Save the token in the database
     await pool.query(

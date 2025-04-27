@@ -5,6 +5,7 @@ import Home from './Home';
 import NeedsMap from './NeedsMap';
 import Register from './Register';
 import Login from './Login';
+import Verify from './Verify';
 import PostNeed from './PostNeed';
 import Messages from './Messages';
 import MyProfile from './MyProfile';
@@ -96,6 +97,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verify" element={<Verify />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           
           {isLoggedIn ? (

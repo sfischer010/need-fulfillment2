@@ -1,2 +1,4 @@
 node_modules
+# Ignore environment variables
 .env
+process.env
