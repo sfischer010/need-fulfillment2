@@ -8,6 +8,12 @@ console.log('Loaded Environment Variables:', {
   SMTP_PASS: process.env.SMTP_PASS,
 });
 
+console.log('DOTENV LOADED:', process.env.DOT_ENV);
+console.log('MAPBOX_TOKEN:', process.env.MAPBOX_TOKEN);
+console.log('REACT_APP_MAPBOX_TOKEN:', process.env.REACT_APP_MAPBOX_TOKEN);
+
+console.log(process.env.DATABASE_HOST, process.env.DATABASE_USER, process.env.DATABASE_NAME, process.env.DATABASE_PASS);
+
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -25,13 +31,16 @@ const app = express();
 
 const secretKey = crypto.randomBytes(64).toString('hex');
 
-const geocodingClient = mbxGeocoding({ accessToken: 'pk.eyJ1IjoidGVsZXNjb3BlMDEiLCJhIjoiY200N3MyZ3lzMDUyNDJrcHcybnBvcnp0ZSJ9.M2Kzxx3IpkukrYWDbuvygw' });
 
-//IMPORTANT: Ensure you have the correct PostgreSQL connection details for your system
+// For server-side code, use MAPBOX_SECRET_TOKEN (the sk. token)
+// OR the public token if you only need read-only access
+//const geocodingClient = process.env.MAPBOX_TOKEN || '';
+const geocodingClient = mbxGeocoding({ accessToken: process.env.MAPBOX_TOKEN || '' });
+
 const pool = new Pool({
-  user: 'steph',
-  host: 'localhost',
-  database: 'NeedFulfillment',
+  user: process.env.DATABASE_USER,
+  host: process.env.DATABASE_HOST,
+  database: process.env.DATABASE_NAME,
   password: process.env.DATABASE_PASS,
   port: 5432,
 });
@@ -57,15 +66,6 @@ pool.connect((err, client, release) => {
 });
 
 app.use(cors());
-/*
-PRODUCTION:
-app.use(cors({
-  origin: 'https://need-fulfillment-26482.nodechef.com',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
-  credentials: true,
-}));*/
-
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
@@ -139,7 +139,7 @@ sendVerificationEmail(
 app.get('/api/get-need-data', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT U.U_ID as userId, U.U_FirstName || ' ' || U.U_LastName AS name, N.N_Title AS need, UN_Description as details, UN.UN_GeoLocation
+      SELECT UN.N_ID as n_id, U.U_ID as userId, U.U_FirstName || ' ' || U.U_LastName AS name, N.N_Title AS need, UN_Description as details, UN.UN_GeoLocation, UN.UN_PostedDate as posteddate
       FROM UN_UserNeedsLnk UN
       JOIN U_Users U ON UN.U_ID = U.U_ID
       JOIN N_Needs N ON UN.N_ID = N.N_ID
@@ -155,10 +155,12 @@ app.get('/api/get-need-data', async (req, res) => {
           coordinates: row.un_geolocation.split(',').reverse().map(Number),
         },
         properties: {
+          n_id: row.n_id,
           userId: row.userid,
           name: row.name,
           need: row.need,
           details: row.details,
+          posteddate: `${new Date(row.posteddate).toLocaleDateString()} ${new Date(row.posteddate).toLocaleTimeString()}`,
         },
       })),
     };
@@ -304,6 +306,7 @@ app.get('/api/nonprofits', async (req, res) => {
     //const response = await fetch(`https://projects.propublica.org/nonprofits/api/v2/search.json?name=${name}&${encodedState}=${state}`);
     const response = await fetch(`https://projects.propublica.org/nonprofits/api/v2/search.json?q=${req.query.q}`);
     const data = await response.json();
+    console.log('Fetched nonprofits data:', data);
     res.json(data);
   } catch (error) {
     console.error('Error fetching nonprofits:', error);
@@ -602,6 +605,30 @@ app.post('/api/messages/reply', async (req, res) => {
     `, [userId]);
 
     res.json(result.rows);
+  } catch (err) {
+    console.error('Error inserting reply:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+app.post('/api/sendfeedback', async (req, res) => {
+  if (!session.userId) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  const { message, isOrganization, organizationName } = req.body;
+
+  try {
+    // Ensure session.userId is correctly assigned
+    const userId = session.userId;
+
+    // Insert the feedback message into the database
+    await pool.query(
+      `INSERT INTO feedback (message, isOrganization, organizationName)
+       VALUES ($1, $2, $3)`,
+      [u_id, message, isOrganization, organizationName || null]
+    );
+
   } catch (err) {
     console.error('Error inserting reply:', err);
     res.status(500).send('Server error');

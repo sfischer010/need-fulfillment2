@@ -18,10 +18,6 @@ At Needs Fulfillment, we believe in the power of community and support. Our plat
 <p>
 Our mission is to bridge the gap between those in need and those willing to help. We strive to create a supportive network where everyone can find the resources they need to thrive.
 </p>
-<h3 className="text-xl">Join Us</h3>
-<p>
-Ready to make a difference? Sign up now to become part of a community dedicated to helping one another. Together, we can fulfill needs and build a stronger, more caring society.
-</p>
   </div>
   );
 };

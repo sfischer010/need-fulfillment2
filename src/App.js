@@ -11,6 +11,7 @@ import Messages from './Messages';
 import MyProfile from './MyProfile';
 import SendMessage from './SendMessage';
 import TermsOfService from './TermsOfService';
+import FeedbackForm from './FeedbackForm';
 import './tailwind.css';
 import './App.css';
 
@@ -51,11 +52,12 @@ function App() {
     <BrowserRouter>
       <div className="flex flex-col min-h-screen">
         <nav className="flex items-center justify-between bg-gradient-to-r from-[#2a2937] to-blue-500 p-4 shadow-md">
-          <img
+          <a href="/"><img
             src="logo-need-fulfillment.png"
             alt="Need Fulfillment Logo"
             className="h-24 w-auto"
           />
+          </a>
           <ul>
             <li className="clickable-li">
               <Link to="/">Home</Link>
@@ -89,6 +91,9 @@ function App() {
                 <li className="clickable-li">
                   <Link to="/messages">Messages</Link>
                 </li>
+                <li className="clickable-li">
+                  <Link to="/feedback-form">Feedback</Link>
+                </li>
               </>
             )}
           </ul>
@@ -99,13 +104,13 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
-          
           {isLoggedIn ? (
             <>
               <Route path="/needs-map" element={<NeedsMap />} />
               <Route path="/post-need" element={<PostNeed />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/my-profile" element={<MyProfile />} />
+              <Route path="/feedback-form" element={<FeedbackForm />} />
             </>
           ) : (
             <>
@@ -123,6 +128,10 @@ function App() {
               />
               <Route
                 path="/my-profile"
+                element={<Navigate to="/login" replace />}
+              />
+              <Route
+                path="/feedback-form"
                 element={<Navigate to="/login" replace />}
               />
             </>

@@ -238,7 +238,6 @@ button[type="submit"]:hover {
   word-break: break-word; 
   overflow-wrap: break-word; 
   display: block;
-  width: 120px;
   text-align: left;
 }
 
@@ -254,7 +253,7 @@ button[type="submit"]:hover {
   @apply p-4 bg-white border border-gray-300 rounded-lg shadow-lg;
   word-break: break-word;
   overflow-wrap: break-word;
-  width: 150px;
+  width: 200px;
 }
 
 .popup-link {
